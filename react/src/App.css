@@ -1,0 +1,16 @@
+body {
+font-family: Arial;
+background: linear-gradient(135deg, #4facfe, #00f2fe);
+height: 100vh;
+display: flex;
+justify-content: center;
+align-items: center;
+}
+.dashboard { background: white; padding: 30px; width: 620px; border-radius: 15px;
+box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+text-align: center;
+}
+.chart-container {
+display: flex;
+justify-content: center;
+}
