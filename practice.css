@@ -1,0 +1,90 @@
+div{
+    width: 100px;
+    height: 100px;
+    margin: 25px;
+    padding: 25px;
+    display: inline-block;
+} 
+#box1 {
+    width: 100px;
+    height: 100px;
+    background-color: green;
+
+
+}
+#box2 {
+    width: 100px;
+    height: 30%;
+    background-color: aquamarine;
+    margin-left: 10px;
+    margin-right: 20px;
+    
+
+} 
+
+div{
+    height: 100px;
+    width: 100px;
+    background-color: aqua;
+    border: 2px solid black;
+    display: inline-block;
+}
+body.back {
+     background-image: url(/Users/sunnyth/Documents/aud/IMG_4904.JPG);
+     background-size: cover;
+
+}
+#box1 {
+    position: fixed;
+    top: 10px;
+    background-image: url(/Users/sunnyth/Documents/aud/IMG_4904.JPG);
+    background-size: cover;
+
+}
+h1{
+    text-align: center;
+}
+.flexcontainer {
+    margin-left: 300px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 800px;
+    height: 800px;
+    align-items: center;
+    align-content: flex-end;
+}
+
+#box11{
+    background-color: lightblue;
+    height: 100px;
+    width: 180px;
+    align-self: flex-start;
+    flex-shrink: 1;
+}
+#box12{
+    background-color: lightgreen;
+    height: 400px;
+    width: 120px;    
+    flex-grow: 2;
+
+}
+#box13{
+    background-color: brown;
+    height: 200px;
+    width: 60px;  
+    flex-grow: 3;  
+}
+#box14{
+    background-color: lightcoral;
+    height: 100px;
+    width: 180px;    
+}
+#box15{
+    background-color: lightgoldenrodyellow;
+    height: 100px;
+    width: 80px;    
+    align-self: flex-end;
+}
+

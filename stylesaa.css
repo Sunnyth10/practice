@@ -1,0 +1,162 @@
+body{
+    margin:0;
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#0d1b2a;
+    font-family:Arial, sans-serif;
+    overflow:hidden;
+}
+
+.loader{
+    text-align:center;
+}
+
+/* CLOUD */
+
+.cloud{
+    position:relative;
+    width:120px;
+    height:50px;
+    margin:auto;
+    animation:float 3s ease-in-out infinite;
+}
+
+.cloud div{
+    position:absolute;
+    background:white;
+    border-radius:50%;
+}
+
+.c1{
+    width:45px;
+    height:45px;
+    left:10px;
+    top:10px;
+}
+
+.c2{
+    width:60px;
+    height:60px;
+    left:35px;
+}
+
+.c3{
+    width:45px;
+    height:45px;
+    right:10px;
+    top:10px;
+}
+
+.cloud::after{
+    content:"";
+    position:absolute;
+    width:100px;
+    height:35px;
+    background:white;
+    left:10px;
+    top:25px;
+    border-radius:20px;
+}
+
+/* RAIN */
+
+.rain{
+    position:relative;
+    width:100px;
+    height:90px;
+    margin:auto;
+}
+
+.rain span{
+    position:absolute;
+    width:6px;
+    height:15px;
+    background:#4fc3f7;
+    border-radius:5px;
+    animation:rain 1s linear infinite;
+}
+
+.rain span:nth-child(1){left:5px;animation-delay:.2s;}
+.rain span:nth-child(2){left:25px;}
+.rain span:nth-child(3){left:45px;animation-delay:.4s;}
+.rain span:nth-child(4){left:65px;animation-delay:.1s;}
+.rain span:nth-child(5){left:85px;animation-delay:.6s;}
+
+/* GLASS */
+
+.glass{
+    width:90px;
+    height:130px;
+    border:4px solid white;
+    border-top:none;
+    border-radius:0 0 12px 12px;
+    margin:0 auto;
+    overflow:hidden;
+    position:relative;
+}
+
+.water{
+    position:absolute;
+    bottom:0;
+    width:100%;
+    background:#29b6f6;
+    animation:fill 5s linear infinite;
+}
+
+/* TEXT */
+
+p{
+    color:white;
+    margin-top:25px;
+    font-size:22px;
+}
+
+/* ANIMATIONS */
+
+@keyframes rain{
+
+    0%{
+        transform:translateY(-10px);
+        opacity:0;
+    }
+
+    20%{
+        opacity:1;
+    }
+
+    100%{
+        transform:translateY(90px);
+        opacity:0;
+    }
+
+}
+
+@keyframes fill{
+
+    0%{
+        height:0%;
+    }
+
+    90%{
+        height:100%;
+    }
+
+    100%{
+        height:0%;
+    }
+
+}
+
+@keyframes float{
+
+    0%,100%{
+        transform:translateX(0);
+    }
+
+    50%{
+        transform:translateX(10px);
+    }
+
+}

@@ -1,0 +1,29 @@
+
+.box1{
+    width: 1000px;
+    height: 500px;
+    background-color: lawngreen;
+    margin-left: 150px;
+    font-size: 40px;
+    text-align: center;
+}
+.box2{
+    width: 800px;
+    height: 400px;
+    background-color: orange;
+    margin-left: 100px;
+}
+.box3{
+    width: 600px;
+    height: 300px;
+    background-color: rgb(39, 39, 224);
+    margin-left: 100px;
+}
+.box4{
+    width:400px ;
+    height:150px;
+    background-color: red;
+    margin-left: 100px;
+    padding-top: 50px;
+
+}

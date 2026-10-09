@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<style>
+    div {
+        width: 100px;
+        height: 100px;
+        background-color: red;
+        animation: moveAndChange 4s infinite;
+    }
+
+    @keyframes moveAndChange {
+        0% {
+            transform: translateX(0);
+            background-color: red;
+        }
+        25% {
+            transform: translateX(500px);
+            background-color: blue;
+        }
+        50% {
+            transform: translateX(100px) translateY(400px);
+            background-color: green;
+        }
+        75% {
+            transform: translateX(0) translateY(100px) translateZ(300px);;
+            background-color: yellow;
+        }
+        100% {
+            transform: translateX(0) translateY(0);
+            background-color: red;
+        }
+    }
+</style>
+<div></div>
+<body style="text-align: center; margin-top: 50px;">
+
+  <h2>What Can JavaScript Do?</h2>
+  <p>JavaScript can change HTML attribute values.</p>
+  <p>In this case, JavaScript changes the value of the <b>src</b> attribute of an image.</p>
+
+  <!-- Light bulb image -->
+  <img id="myImage" src="https://www.w3schools.com/js/pic_bulboff.gif" alt="Light Bulb" style="width:150px"><br><br>
+
+  <!-- Buttons -->
+  <button onclick="document.getElementById('myImage').src='https://www.w3schools.com/js/pic_bulbon.gif'">
+    Turn on the light
+  </button>
+
+  <button onclick="document.getElementById('myImage').src='https://www.w3schools.com/js/pic_bulboff.gif'">
+    Turn off the light
+  </button>
+
+
+</body>
+</html>

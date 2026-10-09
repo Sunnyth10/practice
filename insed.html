@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        .boxes::before{
+            content: "I am a before box";
+            color: tomato;
+        }
+        .boxes::after{
+            content: "I am an after box";
+            color: rgb(0, 200, 255);
+        }
+        .box::first-letter{
+            color: red;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="boxes">
+        <div class="box">Hey! I am a box</div>
+        <div class="box">Hey! I am another box</div>
+        
+    </div>
+
+    
+</body>
+</html>
