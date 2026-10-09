@@ -1,0 +1,19 @@
+/* Custom Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f3f4f6;
+}
+
+/* Custom scrollbar for insights box */
+#insight-list::-webkit-scrollbar {
+    width: 6px;
+}
+#insight-list::-webkit-scrollbar-thumb {
+    background-color: #93c5fd;
+    border-radius: 3px;
+}
+#insight-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}

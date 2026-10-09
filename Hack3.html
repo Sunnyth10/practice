@@ -1,0 +1,1236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Medisync — Unified Healthcare Data & Insights (Prototype)</title>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+  /* -------------------------
+     Base / Theme
+     ------------------------- */
+  :root{
+    --bg:#f6fbff;
+    --card:#ffffff;
+    --muted:#6b7280;
+    --blue:#00cab2;
+    --accent:#0b7fff;
+    --success:#16a34a;
+    --danger:#ef4444;
+    --glass: rgba(11,127,255,0.06);
+    --radius:12px;
+    --shadow: 0 10px 30px rgba(6,24,80,0.06);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter, "Segoe UI", Roboto, system-ui, -apple-system, Arial;
+    background:var(--bg);
+    color:#07102b;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+  a{ color:var(--blue); text-decoration:none }
+  .container{ max-width:1200px; margin:26px auto; padding:0 20px; }
+
+  /* Header */
+  header.appbar{
+    background:linear-gradient(90deg,var(--blue), #4aa3ff);
+    color:white;
+    padding:14px 22px;
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    display:flex;
+    align-items:center;
+    gap:16px;
+    justify-content:space-between;
+  }
+  header .brand{ display:flex; gap:12px; align-items:center; }
+    header .logo{
+        width:48px; height:48px; border-radius:12px;
+        background:linear-gradient(90deg,#e6f0ff,#fff);
+        display:flex; align-items:center; justify-content:center;
+        font-weight:700; color:var(--blue); font-size:24px;
+  }
+  header h1{ font-size:18px; margin:0 }
+  header .actions{ display:flex; gap:10px; align-items:center; }
+
+  /* Layout */
+  .layout{ display:flex; gap:18px; margin-top:18px; }
+  aside.sidebar{
+    width:240px; background:var(--card); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow);
+    height:calc(100vh - 170px); position:sticky; top:80px; overflow:auto;
+  }
+  aside .user{
+    display:flex; gap:12px; align-items:center; padding-bottom:12px; border-bottom:1px solid #eef6ff;
+  }
+  aside .user .avatar{ width:52px;height:52px;border-radius:10px;background:linear-gradient(90deg,#e6f0ff,#fff);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--blue); }
+  nav.side-nav{ margin-top:12px; display:flex; flex-direction:column; gap:8px; }
+  nav.side-nav button{ text-align:left; border:none; background:transparent; padding:10px 8px; border-radius:8px; cursor:pointer; color:var(--muted); font-weight:600 }
+  nav.side-nav button:hover{ background:var(--glass); color:var(--blue) }
+  nav.side-nav button.active{ background:var(--glass); color:var(--blue) }
+
+  main.content{
+    flex:1;
+  }
+  .card{ background:var(--card); border-radius:12px; padding:16px; box-shadow:var(--shadow); margin-bottom:16px; }
+
+  /* Topbar controls */
+  .topbar{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
+  .search input{ padding:10px 12px; border-radius:10px; border:1px solid #e6eefc; width:420px; background:white }
+  .controls{ display:flex; gap:8px; align-items:center; }
+
+  /* grid */
+  .grid{ display:grid; grid-template-columns: repeat(12, 1fr); gap:16px; }
+  .col-3{ grid-column: span 3; }
+  .col-4{ grid-column: span 4; }
+  .col-6{ grid-column: span 6; }
+  .col-8{ grid-column: span 8; }
+  .col-12{ grid-column: span 12; }
+
+  /* tables / lists */
+  table{ width:100%; border-collapse:collapse; }
+  th,td{ text-align:left; padding:10px; border-bottom:1px solid #f1f5f9; }
+  .pill{ padding:6px 10px; border-radius:10px; font-weight:600; font-size:13px }
+  .pill.success{ background:rgba(34,197,94,0.12); color:var(--success) }
+  .pill.warn{ background:rgba(250,204,21,0.12); color:#d97706 }
+  .pill.danger{ background:rgba(239,68,68,0.12); color:var(--danger) }
+
+  /* Buttons */
+  .btn{ padding:8px 12px; border-radius:8px; border:none; cursor:pointer; font-weight:700 }
+  .btn.primary{ background:var(--blue); color:white; box-shadow: 0 8px 20px rgba(11,127,255,0.12) }
+  .btn.ghost{ background:transparent; color:var(--blue); border:1px solid rgba(11,127,255,0.12) }
+
+  /* modals */
+  .modal-backdrop{ position:fixed; inset:0; background:rgba(6,10,40,0.45); display:none; align-items:center; justify-content:center; z-index:200; }
+  .modal{ background:white; width:720px; max-width:90%; border-radius:12px; padding:18px; box-shadow:0 30px 80px rgba(0,0,0,0.3); }
+
+  /* small components */
+  .stat { display:flex; justify-content:space-between; align-items:center; padding:12px; border-radius:10px; background:linear-gradient(180deg, rgba(11,127,255,0.03), #fff); border:1px solid rgba(11,127,255,0.06) }
+  .patient-list{ max-height:360px; overflow:auto; display:flex; flex-direction:column; gap:8px; padding-top:6px; }
+  .patient-item{ display:flex; align-items:center; gap:12px; padding:10px; border-radius:8px; border:1px solid #f1f5f9; }
+  .avatar-sm{ width:44px;height:44px;border-radius:8px;background:linear-gradient(90deg,#eef2ff,#fff);display:flex;align-items:center;justify-content:center;color:var(--blue); font-weight:700 }
+
+  /* chat */
+  .chat-toggle{ position:fixed; right:24px; bottom:24px; width:58px;height:58px;border-radius:14px;background:var(--blue);color:white;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 10px 30px rgba(11,127,255,0.2);cursor:pointer; z-index:150; }
+  .chat-window{ position:fixed; right:90px; bottom:24px; width:380px; max-height:520px; background:white; border-radius:12px; box-shadow:0 30px 80px rgba(6,10,40,0.15); display:none; flex-direction:column; z-index:160; }
+  .chat-header{ background:linear-gradient(90deg,var(--blue),#60a5fa); color:white; padding:12px; display:flex; justify-content:space-between; align-items:center; border-top-left-radius:12px; border-top-right-radius:12px; }
+  .chat-body{ padding:12px; overflow:auto; flex:1; display:flex; flex-direction:column; gap:8px; background: #fbfdff; }
+  .chat-input{ display:flex; gap:8px; padding:10px; border-top:1px solid #eef2ff; }
+  .bubble.bot{ align-self:flex-start; background:#eef6ff; padding:10px 12px; border-radius:12px; max-width:80% }
+  .bubble.user{ align-self:flex-end; background:#d1f7eb; padding:10px 12px; border-radius:12px; max-width:80% }
+
+  /* responsive */
+  @media (max-width:1000px){
+    aside.sidebar{ display:none }
+    .grid{ grid-template-columns:repeat(6,1fr) }
+    .col-3{ grid-column: span 6 }
+    .col-4{ grid-column: span 6 }
+  }
+
+  footer{ text-align:center; color:var(--muted); padding:18px 0; margin-top:30px }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <header class="appbar">
+    <div class="brand">
+      <div class="logo"
+      img src="/Users/sunnyth/Downloads/WhatsApp Image 2025-11-02 at 18.30.20.jpeg" alt="Logo of Medi Bridge"></div>
+      <div>
+        <h1>Medi Bridge </h1>
+        <div style="font-size:12px; opacity:0.9">Unified Healthcare Data & Insights</div>
+      </div>
+    </div>
+
+    <div class="actions" id="topActions">
+      <div id="welcomeText" style="font-weight:700;color:white">Welcome — please sign in</div>
+      <button class="btn ghost" id="btnRegister">Register</button>
+      <button class="btn primary" id="btnSignIn">Sign In</button>
+    </div>
+  </header>
+
+  <!-- Main layout -->
+  <div class="layout">
+    <!-- Sidebar (role + nav) -->
+    <aside class="sidebar">
+      <div class="user">
+        <div class="avatar" id="sidebarAvatar">👤</div>
+        <div>
+          <div id="sidebarName" style="font-weight:700">Guest</div>
+          <div style="font-size:13px;color:var(--muted)" id="sidebarRole">Not signed in</div>
+        </div>
+      </div>
+
+      <nav class="side-nav">
+        <button class="active" data-section="dashboard">Dashboard</button>
+        <button data-section="patients">Patients</button>
+        <button data-section="appointments">Appointments</button>
+        <button data-section="records">Records</button>
+        <button data-section="telehealth">Telehealth</button>
+        <button data-section="analytics">Analytics</button>
+        <button data-section="settings">Settings</button>
+      </nav>
+
+      <div style="margin-top:14px; font-size:13px; color:var(--muted)">Tip: Use the top Sign In to pick a role and explore the corresponding UI.</div>
+    </aside>
+
+    <!-- Content -->
+    <main class="content">
+      <!-- Topbar controls -->
+      <div class="topbar">
+        <div class="search">
+          <input id="globalSearch" placeholder="Search patients, meds, appointments..." />
+        </div>
+        <div class="controls">
+          <button class="btn ghost" id="btnQuickAdd">+ New Note</button>
+          <button class="btn primary" id="btnSignOut" style="display:none">Sign Out</button>
+        </div>
+      </div>
+
+      <!-- Dynamic main area -->
+      <div id="mainArea">
+        <!-- Landing / Dashboard default -->
+        <div class="card">
+          <h2>Welcome to Medisync 👋</h2>
+          <p style="color:var(--muted)">A unified healthcare data and insights management platform — demo prototype for your hackathon. Sign in as Patient, Doctor, or Organization to explore role-based dashboards.</p>
+        </div>
+
+        <!-- quick overview grid -->
+        <div class="grid">
+          <div class="col-3 card stat">
+            <div>
+              <div style="font-size:13px;color:var(--muted)">Total Appointments</div>
+              <div style="font-weight:800;font-size:20px">1,250</div>
+            </div>
+            <div style="font-size:22px">📅</div>
+          </div>
+          <div class="col-3 card stat">
+            <div>
+              <div style="font-size:13px;color:var(--muted)">Active Patients</div>
+              <div style="font-weight:800;font-size:20px">480</div>
+            </div>
+            <div style="font-size:22px">🩺</div>
+          </div>
+          <div class="col-3 card stat">
+            <div>
+              <div style="font-size:13px;color:var(--muted)">Available Staff</div>
+              <div style="font-weight:800;font-size:20px">92</div>
+            </div>
+            <div style="font-size:22px">👩‍⚕️</div>
+          </div>
+          <div class="col-3 card stat">
+            <div>
+              <div style="font-size:13px;color:var(--muted)">Occupied Rooms</div>
+              <div style="font-weight:800;font-size:20px">65%</div>
+            </div>
+            <div style="font-size:22px">🏥</div>
+          </div>
+        </div>
+
+        <!-- placeholder -->
+        <div id="roleDashboardPlaceholder"></div>
+      </div>
+
+    </main>
+  </div>
+
+  <footer>© 2025 Medisync — Prototype for Hackathon • Demo data only</footer>
+</div>
+
+<!-- Chat -->
+<div class="chat-toggle" id="chatToggle" title="MediBot">💬</div>
+
+<div class="chat-window" id="chatWindow">
+  <div class="chat-header">
+    <div style="font-weight:800">🤖 MediBot</div>
+    <div style="font-size:12px; opacity:0.9" id="chatRoleLabel">Guest Assistant</div>
+  </div>
+  <div class="chat-body" id="chatBody"></div>
+  <div class="chat-input">
+    <input id="chatInput" placeholder="Ask MediBot about meds, appointments, or run simulation..." />
+    <button class="btn primary" id="chatSend">Send</button>
+  </div>
+</div>
+
+<!-- Modals -->
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<!-- ===========================
+     JavaScript: Demo App Logic
+     =========================== -->
+<script>
+/*
+  Medisync Prototype Single-file App
+  - Role-based login (patient, doctor, org)
+  - Fake backend with localStorage persistence
+  - Dashboards for each role
+  - Charts (Chart.js) + interactive features
+  - Chatbot MediBot (role-aware)
+  - All main buttons clickable and wired
+*/
+
+// -------------------------
+// Demo / initial data
+// -------------------------
+const DEMO_USERS = [
+  { id:'u_patient', role:'patient', email:'patient@demo', pw:'1234', name:'Aditi Sharma' },
+  { id:'u_doctor', role:'doctor', email:'doctor@demo', pw:'1234', name:'Dr. Rahul Mehta' },
+  { id:'u_org', role:'org', email:'org@demo', pw:'1234', name:'CityCare Hospital' }
+];
+
+const DEMO_PATIENTS = [
+  { id:'P001', name:'Alice Johnson', age:45, sex:'F', blood:'A+', contact:'+91 98765 12345', lastVisit:'2025-10-26', status:'Stable', meds:['Lisinopril 10mg','Metformin 500mg'], diagnoses:['Hypertension','Type 2 Diabetes'], labs:[{name:'HbA1c',value:'7.4%',date:'2025-09-15'},{name:'Potassium',value:'3.2 mmol/L',date:'2025-10-01'}], vitals:{bp:'130/80', sugar:'120'}} ,
+  { id:'P002', name:'Robert Davis', age:62, sex:'M', blood:'O+', contact:'+91 91234 56789', lastVisit:'2025-10-28', status:'Critical', meds:['Furosemide 40mg'], diagnoses:['CHF'], labs:[{name:'K+',value:'2.9 mmol/L',date:'2025-10-28'}], vitals:{bp:'150/95', sugar:'140'} },
+  { id:'P003', name:'Sophia Miller', age:28, sex:'F', blood:'B+', contact:'+91 99876 54321', lastVisit:'2025-10-01', status:'Alert', meds:[], diagnoses:['Hypothyroidism'], labs:[], vitals:{bp:'110/70', sugar:'95'} }
+];
+
+const DEMO_APPTS = [
+  { id:'A001', patientId:'P001', patientName:'Alice Johnson', doctor:'Dr. Rahul Mehta', time:'2025-11-10 10:00', type:'Virtual', status:'Confirmed' },
+  { id:'A002', patientId:'P003', patientName:'Sophia Miller', doctor:'Dr. Rahul Mehta', time:'2025-11-10 11:30', type:'In-person', status:'Pending' },
+  { id:'A003', patientId:'P002', patientName:'Robert Davis', doctor:'Dr. Rahul Mehta', time:'2025-11-10 14:00', type:'In-person', status:'Confirmed' }
+];
+
+// storage keys
+const KEY_USERS = 'medisync_users_v1';
+const KEY_SESSION = 'medisync_session_v1';
+const KEY_PATIENTS = 'medisync_patients_v1';
+const KEY_APPTS = 'medisync_appts_v1';
+const KEY_CHAT = 'medisync_chat_v1';
+
+// initialize if empty
+function initDemoData(){
+  if(!localStorage.getItem(KEY_USERS)) localStorage.setItem(KEY_USERS, JSON.stringify(DEMO_USERS));
+  if(!localStorage.getItem(KEY_PATIENTS)) localStorage.setItem(KEY_PATIENTS, JSON.stringify(DEMO_PATIENTS));
+  if(!localStorage.getItem(KEY_APPTS)) localStorage.setItem(KEY_APPTS, JSON.stringify(DEMO_APPTS));
+  if(!localStorage.getItem(KEY_CHAT)) localStorage.setItem(KEY_CHAT, JSON.stringify([
+    {from:'bot',text:'Welcome to Medisync! I can help with simulations, appointments, and quick summaries.'}
+  ]));
+}
+initDemoData();
+
+// fakeFetch simulates network delay
+function fakeFetch(key, delay=400){
+  return new Promise(res => setTimeout(()=> res(JSON.parse(localStorage.getItem(key))), delay));
+}
+
+// helpers
+function byId(id){ return document.getElementById(id); }
+function save(key, data){ localStorage.setItem(key, JSON.stringify(data)); }
+
+// session
+let SESSION = JSON.parse(localStorage.getItem(KEY_SESSION)) || null;
+updateHeader();
+
+// -------------------------
+// UI: Sign In / Register
+// -------------------------
+byId('btnSignIn').addEventListener('click', openSignIn);
+byId('btnRegister').addEventListener('click', openRegister);
+byId('btnSignOut').addEventListener('click', signOut);
+byId('btnQuickAdd').addEventListener('click', ()=> openNoteModal());
+
+// sign in modal
+function openSignIn(){
+  const html = `
+    <h3>Sign in</h3>
+    <div style="display:flex;gap:8px;">
+      <select id="modalRole" style="flex:1;padding:8px;border-radius:8px">
+        <option value="patient">Patient</option>
+        <option value="doctor">Doctor</option>
+        <option value="org">Organization</option>
+      </select>
+      <input id="modalEmail" placeholder="email" style="flex:2;padding:8px;border-radius:8px"/>
+      <input id="modalPw" placeholder="password" type="password" style="flex:1;padding:8px;border-radius:8px"/>
+    </div>
+    <div style="margin-top:12px;text-align:right">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn primary" onclick="doSignIn()">Sign In</button>
+    </div>
+  `;
+  showModal(html);
+}
+function openRegister(){
+  const html = `
+    <h3>Create account</h3>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+      <input id="regName" placeholder="Full name" style="padding:8px;border-radius:8px"/>
+      <select id="regRole" style="padding:8px;border-radius:8px">
+        <option value="patient">Patient</option>
+        <option value="doctor">Doctor</option>
+        <option value="org">Organization</option>
+      </select>
+      <input id="regEmail" placeholder="Email" style="padding:8px;border-radius:8px" />
+      <input id="regPw" placeholder="Password" type="password" style="padding:8px;border-radius:8px" />
+    </div>
+    <div style="margin-top:12px;text-align:right">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn primary" onclick="doRegister()">Create</button>
+    </div>
+  `;
+  showModal(html);
+}
+
+function doSignIn(){
+  const role = byId('modalRole').value;
+  const email = byId('modalEmail').value.trim();
+  const pw = byId('modalPw').value;
+  const users = JSON.parse(localStorage.getItem(KEY_USERS) || '[]');
+  const found = users.find(u => u.role === role && u.email === email && u.pw === pw);
+  if(!found){ alert('Invalid demo credentials. Try patient@demo / 1234 or doctor@demo / 1234'); return; }
+  SESSION = { id:found.id, role:found.role, name:found.name, email:found.email };
+  localStorage.setItem(KEY_SESSION, JSON.stringify(SESSION));
+  closeModal();
+  updateHeader();
+  loadRoleDashboard();
+}
+function doRegister(){
+  const name = byId('regName').value.trim();
+  const role = byId('regRole').value;
+  const email = byId('regEmail').value.trim();
+  const pw = byId('regPw').value;
+  if(!name || !email || !pw){ alert('Please fill all fields'); return; }
+  const users = JSON.parse(localStorage.getItem(KEY_USERS) || '[]');
+  const id = 'u_' + Math.random().toString(36).slice(2,9);
+  users.push({ id, role, email, pw, name });
+  save(KEY_USERS, users);
+  alert('Account created (demo). Sign in now.');
+  closeModal();
+}
+
+// sign out
+function signOut(){
+  if(!SESSION) return;
+  if(!confirm('Sign out?')) return;
+  SESSION = null;
+  localStorage.removeItem(KEY_SESSION);
+  updateHeader();
+  renderLanding();
+}
+
+// modal helpers
+function showModal(innerHtml){
+  byId('modalContent').innerHTML = innerHtml;
+  byId('modalBackdrop').style.display = 'flex';
+}
+function closeModal(){ byId('modalBackdrop').style.display = 'none'; byId('modalContent').innerHTML = ''; }
+
+// update header / sidebar
+function updateHeader(){
+  if(SESSION){
+    byId('welcomeText').textContent = `Signed in as ${SESSION.name} (${SESSION.role})`;
+    byId('sidebarName').textContent = SESSION.name;
+    byId('sidebarRole').textContent = SESSION.role.toUpperCase();
+    byId('sidebarAvatar').textContent = SESSION.name.split(' ').map(n=>n[0]).slice(0,2).join('');
+    byId('btnSignOut').style.display = 'inline-block';
+  } else {
+    byId('welcomeText').textContent = 'Welcome — please sign in';
+    byId('sidebarName').textContent = 'Guest';
+    byId('sidebarRole').textContent = 'Not signed in';
+    byId('sidebarAvatar').textContent = '👤';
+    byId('btnSignOut').style.display = 'none';
+  }
+}
+
+// -------------------------
+// Navigation: side buttons
+// -------------------------
+document.querySelectorAll('nav.side-nav button').forEach(btn=>{
+  btn.addEventListener('click', e=>{
+    document.querySelectorAll('nav.side-nav button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    const sec = btn.dataset.section;
+    if(sec==='dashboard') loadRoleDashboard();
+    else if(sec==='patients') renderPatientsPage();
+    else if(sec==='appointments') renderAppointmentsPage();
+    else if(sec==='records') renderRecordsPage();
+    else if(sec==='telehealth') renderTelehealthPage();
+    else if(sec==='analytics') renderAnalyticsPage();
+    else if(sec==='settings') renderSettingsPage();
+  });
+});
+
+// -------------------------
+// Landing / Role dashboards
+// -------------------------
+function renderLanding(){
+  const container = byId('roleDashboardPlaceholder');
+  container.innerHTML = `
+    <div class="card">
+      <h3>Explore by role</h3>
+      <div style="display:flex;gap:12px;margin-top:12px">
+        <div style="flex:1" class="card">
+          <h4>👨‍⚕️ Doctor</h4>
+          <p class="small">View your patient queue, active cases and clinical insights.</p>
+          <button class="btn primary" onclick="quickLogin('doctor')">Try Doctor</button>
+        </div>
+        <div style="flex:1" class="card">
+          <h4>🧑 Patient</h4>
+          <p class="small">Access your medical records, book appointments and start telehealth calls.</p>
+          <button class="btn primary" onclick="quickLogin('patient')">Try Patient</button>
+        </div>
+        <div style="flex:1" class="card">
+          <h4>🏥 Organization</h4>
+          <p class="small">Monitor staff, rooms, and hospital-wide analytics.</p>
+          <button class="btn primary" onclick="quickLogin('org')">Try Organization</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+renderLanding();
+
+// quick demo sign-in for demo users
+function quickLogin(role){
+  const users = JSON.parse(localStorage.getItem(KEY_USERS));
+  const u = users.find(x=>x.role===role);
+  if(!u){ alert('No demo user for role'); return; }
+  SESSION = { id:u.id, role:u.role, name:u.name, email:u.email };
+  localStorage.setItem(KEY_SESSION, JSON.stringify(SESSION));
+  updateHeader();
+  loadRoleDashboard();
+}
+
+// load role specific dashboard
+async function loadRoleDashboard(){
+  const role = SESSION ? SESSION.role : null;
+  if(!role){ renderLanding(); return; }
+  if(role==='patient') renderPatientDashboard();
+  else if(role==='doctor') renderDoctorDashboard();
+  else if(role==='org') renderOrgDashboard();
+}
+
+// -------------------------
+// Patient Dashboard
+// -------------------------
+async function renderPatientDashboard(){
+  const patients = await fakeFetch(KEY_PATIENTS);
+  const myPatient = patients[0]; // demo: first patient corresponds to logged-in patient
+  const appts = JSON.parse(localStorage.getItem(KEY_APPTS) || '[]').filter(a=>a.patientId===myPatient.id);
+
+  const container = byId('roleDashboardPlaceholder');
+  container.innerHTML = `
+    <div class="grid">
+      <div class="col-6 card">
+        <h3>🩺 My Medical Records</h3>
+        <div style="display:flex;gap:12px;margin-top:10px">
+          <div style="flex:1">
+            <h4>Overview</h4>
+            <p><strong>${myPatient.name}</strong> • ${myPatient.age} yrs • ${myPatient.blood}</p>
+            <p style="color:var(--muted)">${myPatient.diagnoses.join(', ') || 'No diagnoses recorded'}</p>
+          </div>
+          <div style="width:220px">
+            <button class="btn ghost" onclick="viewRecord('${myPatient.id}')">View Full Record</button>
+            <button class="btn primary" onclick="openUpload('${myPatient.id}')">Upload File</button>
+          </div>
+        </div>
+
+        <div style="margin-top:12px">
+          <h4>Medications</h4>
+          <ul id="medList">${myPatient.meds.map(m=>`<li>${m}</li>`).join('')}</ul>
+        </div>
+
+        <div style="margin-top:12px">
+          <h4>Vitals</h4>
+          <div style="display:flex;gap:12px">
+            <div style="flex:1" class="card">
+              <div style="font-size:13px;color:var(--muted)">BP</div>
+              <div style="font-weight:700">${myPatient.vitals.bp}</div>
+            </div>
+            <div style="flex:1" class="card">
+              <div style="font-size:13px;color:var(--muted)">Blood Sugar</div>
+              <div style="font-weight:700">${myPatient.vitals.sugar}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6 card">
+        <h3>📅 Appointments & Telehealth</h3>
+        <div id="apptList">
+          ${appts.map(a=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid #f1f5f9"><div><strong>${a.time}</strong><div style="font-size:13px;color:var(--muted)">${a.type} with ${a.doctor}</div></div><div><button class="btn ghost" onclick="openTelehealth('${a.id}')">Start Call</button></div></div>`).join('')}
+        </div>
+        <div style="margin-top:12px">
+          <button class="btn primary" onclick="openBooking('${myPatient.id}')">Book Appointment</button>
+        </div>
+
+        <div style="margin-top:18px">
+          <h4>Upload / Documents</h4>
+          <div id="docList"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:12px">
+      <div class="col-8 card">
+        <h3>Health Trends (Demo)</h3>
+        <canvas id="patientTrend" height="120"></canvas>
+      </div>
+
+      <div class="col-4 card">
+        <h3>Reminders</h3>
+        <ul>
+          <li>Refill Metformin in 3 days</li>
+          <li>Annual Checkup due Nov 15</li>
+        </ul>
+      </div>
+    </div>
+  `;
+
+  // load documents (simple)
+  loadPatientDocs(myPatient.id);
+
+  // render chart
+  const ctx = byId('patientTrend').getContext('2d');
+  new Chart(ctx, { type:'line', data:{ labels:['-6d','-5d','-4d','-3d','-2d','-1d','Today'], datasets:[{ label:'Blood Sugar', data:[140,138,135,130,128,125,120], borderColor:varColor(), fill:false, tension:0.3 }] }, options:{maintainAspectRatio:false} });
+
+  // ensure sign out visible
+  byId('btnSignOut').style.display = 'inline-block';
+}
+
+// view record modal
+async function viewRecord(patientId){
+  const patients = await fakeFetch(KEY_PATIENTS);
+  const p = patients.find(x=>x.id===patientId);
+  if(!p) return alert('Patient not found');
+  const modalHtml = `
+    <h3>${p.name} — Record</h3>
+    <div style="display:flex;gap:12px">
+      <div style="flex:1">
+        <h4>Overview</h4>
+        <p><strong>ID:</strong> ${p.id}</p>
+        <p><strong>Age:</strong> ${p.age}, <strong>Blood:</strong> ${p.blood}</p>
+        <p><strong>Contact:</strong> ${p.contact}</p>
+      </div>
+      <div style="width:260px">
+        <h4>Vitals</h4>
+        <p>BP: ${p.vitals.bp}</p>
+        <p>Sugar: ${p.vitals.sugar}</p>
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      <h4>Diagnoses</h4>
+      <ul>${p.diagnoses.map(d=>`<li>${d}</li>`).join('')}</ul>
+    </div>
+    <div style="margin-top:12px">
+      <h4>Medications</h4>
+      <ul>${p.meds.map(m=>`<li>${m}</li>`).join('')}</ul>
+    </div>
+    <div style="margin-top:12px">
+      <h4>Labs</h4>
+      <ul>${p.labs.map(l=>`<li>${l.name}: ${l.value} <small>(${l.date})</small></li>`).join('') || '<li>No labs</li>'}</ul>
+    </div>
+    <div style="text-align:right;margin-top:12px">
+      <button class="btn ghost" onclick="closeModal()">Close</button>
+      <button class="btn primary" onclick="closeModal()">Export PDF</button>
+    </div>
+  `;
+  showModal(modalHtml);
+}
+
+// upload files
+function openUpload(patientId){
+  const html = `
+    <h3>Upload document for ${patientId}</h3>
+    <input type="file" id="fileInput" />
+    <div style="margin-top:12px;text-align:right">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn primary" onclick="doUpload('${patientId}')">Upload</button>
+    </div>
+  `;
+  showModal(html);
+}
+function doUpload(patientId){
+  const f = byId('fileInput').files[0];
+  if(!f) return alert('Pick a file');
+  // For demo, just record file name in patient's documents stored in localStorage
+  const docsKey = 'medisync_docs_v1';
+  const docs = JSON.parse(localStorage.getItem(docsKey) || '{}');
+  if(!docs[patientId]) docs[patientId] = [];
+  docs[patientId].push({ name: f.name, uploaded: new Date().toLocaleString() });
+  localStorage.setItem(docsKey, JSON.stringify(docs));
+  closeModal();
+  loadPatientDocs(patientId);
+  mediBotSay(`Uploaded file ${f.name} for ${patientId}`);
+}
+function loadPatientDocs(patientId){
+  const docsKey = 'medisync_docs_v1';
+  const docs = JSON.parse(localStorage.getItem(docsKey) || '{}');
+  const arr = docs[patientId] || [];
+  const el = document.getElementById('docList');
+  if(!el) return;
+  if(arr.length===0) el.innerHTML = '<div style="color:var(--muted)">No documents uploaded</div>';
+  else el.innerHTML = '<ul>' + arr.map(d=>`<li>${d.name} <small style="color:var(--muted)">(${d.uploaded})</small></li>`).join('') + '</ul>';
+}
+
+// booking modal
+function openBooking(patientId){
+  const html = `
+    <h3>Book Appointment (Demo)</h3>
+    <div style="display:flex;gap:8px;">
+      <input id="bkDate" type="datetime-local" style="flex:1;padding:8px;border-radius:8px"/>
+      <select id="bkType" style="flex:1;padding:8px;border-radius:8px">
+        <option>Virtual</option><option>In-person</option><option>Home Test Booking</option>
+      </select>
+    </div>
+    <div style="margin-top:10px">
+      <select id="bkDoctor" style="width:100%;padding:8px;border-radius:8px">
+        <option>Dr. Rahul Mehta</option><option>Dr. Emily White</option>
+      </select>
+    </div>
+    <div style="margin-top:12px;text-align:right">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn primary" onclick="doBooking('${patientId}')">Confirm</button>
+    </div>
+  `;
+  showModal(html);
+}
+function doBooking(patientId){
+  const time = byId('bkDate').value;
+  const type = byId('bkType').value;
+  const doc = byId('bkDoctor').value;
+  if(!time) return alert('Pick date/time');
+  const appts = JSON.parse(localStorage.getItem(KEY_APPTS) || '[]');
+  const pat = JSON.parse(localStorage.getItem(KEY_PATIENTS) || '[]').find(p=>p.id===patientId);
+  appts.push({ id:'A' + Math.random().toString(36).slice(2,7), patientId, patientName:pat.name, doctor:doc, time, type, status:'Pending' });
+  save(KEY_APPTS, appts);
+  closeModal();
+  renderPatientDashboard();
+  mediBotSay(`Booked ${type} appointment with ${doc} on ${new Date(time).toLocaleString()}`);
+}
+
+// telehealth mock
+function openTelehealth(apptId){
+  const appts = JSON.parse(localStorage.getItem(KEY_APPTS) || '[]');
+  const a = appts.find(x=>x.id===apptId);
+  if(!a) return alert('Appointment not found');
+  const html = `
+    <h3>Telehealth — ${a.patientName} with ${a.doctor}</h3>
+    <p style="color:var(--muted)">Mock telehealth call window. This is a prototype; no real video is connected.</p>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+      <button class="btn ghost" onclick="closeModal()">End</button>
+      <button class="btn primary" onclick="closeModal(); mediBotSay('Telehealth call ended (demo)')">End Call</button>
+    </div>
+  `;
+  showModal(html);
+}
+
+// -------------------------
+// Doctor Dashboard
+// -------------------------
+async function renderDoctorDashboard(){
+  const patients = await fakeFetch(KEY_PATIENTS);
+  const appts = JSON.parse(localStorage.getItem(KEY_APPTS) || '[]');
+
+  const container = byId('roleDashboardPlaceholder');
+  container.innerHTML = `
+    <div class="grid">
+      <div class="col-4 card">
+        <h3>Patients in Queue</h3>
+        <div class="patient-list" id="docQueue"></div>
+      </div>
+
+      <div class="col-8 card">
+        <h3>Patient Detail & Actions</h3>
+        <div id="docPatientDetail">Select a patient to view details</div>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:14px">
+      <div class="col-8 card">
+        <h3>Weekly Appointments</h3>
+        <canvas id="doctorAppts" height="120"></canvas>
+      </div>
+      <div class="col-4 card">
+        <h3>Active Cases</h3>
+        <div id="activeCases"></div>
+      </div>
+    </div>
+  `;
+
+  // populate queue
+  const qEl = byId('docQueue');
+  qEl.innerHTML = '';
+  patients.forEach(p=>{
+    const div = document.createElement('div');
+    div.className = 'patient-item';
+    div.innerHTML = `<div class="avatar-sm">${p.name.split(' ').map(n=>n[0]).slice(0,2).join('')}</div>
+      <div style="flex:1">
+        <div style="font-weight:700">${p.name}</div>
+        <div style="font-size:13px;color:var(--muted)">${p.age} • ${p.blood}</div>
+      </div>
+      <div>
+        <button class="btn ghost" onclick="doctorViewPatient('${p.id}')">View</button>
+      </div>`;
+    qEl.appendChild(div);
+  });
+
+  // active cases
+  const activeEl = byId('activeCases');
+  activeEl.innerHTML = '<ul>' + patients.filter(p=>p.status!=='Stable').map(p=>`<li>${p.name} — <span class="pill danger">${p.status}</span></li>`).join('') + '</ul>';
+
+  // appointments chart
+  const ctx = byId('doctorAppts').getContext('2d');
+  const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const data = [25,32,28,45,48,20,15];
+  new Chart(ctx, { type:'bar', data:{ labels, datasets:[{ label:'Appointments', data, backgroundColor:varColor() }]}, options:{maintainAspectRatio:false} });
+}
+
+// doctor view patient
+async function doctorViewPatient(pid){
+  const patients = JSON.parse(localStorage.getItem(KEY_PATIENTS));
+  const p = patients.find(x=>x.id===pid);
+  if(!p) return;
+  const html = `
+    <h3>${p.name} — ${p.id}</h3>
+    <div style="display:flex;gap:12px">
+      <div style="flex:1">
+        <p><strong>Age:</strong> ${p.age}</p>
+        <p><strong>Blood:</strong> ${p.blood}</p>
+        <p><strong>Contact:</strong> ${p.contact}</p>
+        <p><strong>Last Visit:</strong> ${p.lastVisit}</p>
+      </div>
+      <div style="width:240px">
+        <button class="btn primary" onclick="startTelehealthFor('${p.id}')">Start Telehealth</button>
+        <button class="btn ghost" onclick="markSeen('${p.id}')">Mark as Seen</button>
+      </div>
+    </div>
+
+    <div style="margin-top:12px">
+      <h4>Medications</h4><ul>${p.meds.map(m=>`<li>${m}</li>`).join('') || '<li>None</li>'}</ul>
+    </div>
+    <div style="margin-top:12px">
+      <h4>Labs</h4><ul>${p.labs.map(l=>`<li>${l.name}: ${l.value} <small>(${l.date})</small></li>`).join('') || '<li>None</li>'}</ul>
+    </div>
+
+    <div style="text-align:right;margin-top:12px">
+      <button class="btn ghost" onclick="closeModal()">Close</button>
+      <button class="btn primary" onclick="closeModal()">Add Note</button>
+    </div>
+  `;
+  showModal(html);
+}
+function startTelehealthFor(pid){
+  closeModal();
+  const apptId = 'A' + Math.random().toString(36).slice(2,7);
+  showModal(`<h3>Starting Telehealth with ${pid}</h3><p style="color:var(--muted)">Demo call started — this is a mock. Click close to end.</p><div style="text-align:right;margin-top:12px"><button class="btn primary" onclick="closeModal()">End Call</button></div>`);
+  mediBotSay(`Started telehealth for ${pid} (demo)`);
+}
+function markSeen(pid){
+  // demo: change status
+  const rx = JSON.parse(localStorage.getItem(KEY_PATIENTS));
+  const idx = rx.findIndex(x=>x.id===pid);
+  if(idx>=0){ rx[idx].status = 'Stable'; save(KEY_PATIENTS, rx); closeModal(); renderDoctorDashboard(); mediBotSay(`${rx[idx].name} marked as seen`); }
+}
+
+// -------------------------
+// Organization Dashboard
+// -------------------------
+async function renderOrgDashboard(){
+  const patients = await fakeFetch(KEY_PATIENTS);
+  const appts = JSON.parse(localStorage.getItem(KEY_APPTS) || '[]');
+
+  const container = byId('roleDashboardPlaceholder');
+  container.innerHTML = `
+    <div class="grid">
+      <div class="col-8 card">
+        <h3>Provider Dashboard Overview</h3>
+        <div class="grid" style="margin-top:10px">
+          <div class="col-3"><div class="card stat"><div><div style="font-size:13px;color:var(--muted)">Total Appointments</div><div style="font-weight:800">1,250</div></div></div></div>
+          <div class="col-3"><div class="card stat"><div><div style="font-size:13px;color:var(--muted)">Active Patients</div><div style="font-weight:800">480</div></div></div></div>
+          <div class="col-3"><div class="card stat"><div><div style="font-size:13px;color:var(--muted)">Available Staff</div><div style="font-weight:800">92</div></div></div></div>
+          <div class="col-3"><div class="card stat"><div><div style="font-size:13px;color:var(--muted)">Occupied Rooms</div><div style="font-weight:800">65%</div></div></div></div>
+        </div>
+
+        <div style="margin-top:12px" class="card">
+          <h4>Upcoming Appointments</h4>
+          <table>
+            <thead><tr><th>Patient</th><th>Time</th><th>Doctor</th><th>Status</th></tr></thead>
+            <tbody>
+              ${appts.slice(0,5).map(a=>`<tr><td>${a.patientName}</td><td>${a.time}</td><td>${a.doctor}</td><td>${a.status}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="col-4 card">
+        <h3>Resource Utilization</h3>
+        <canvas id="orgDonut" height="200"></canvas>
+      </div>
+    </div>
+
+    <div class="grid" style="margin-top:12px">
+      <div class="col-6 card">
+        <h4>Staff Schedule Summary</h4>
+        <ul>
+          <li>Dr. Emily White — Cardiologist — On Shift</li>
+          <li>Dr. Alex Lee — Pediatrician — Available</li>
+          <li>Nurse Sarah — RN — On Shift</li>
+        </ul>
+      </div>
+      <div class="col-6 card">
+        <h4>Patient Category Lists</h4>
+        <div>
+          <strong>Cardio patients</strong><ul>${patients.filter(p=>p.diagnoses.join(' ').toLowerCase().includes('heart')?true:false).map(p=>`<li>${p.name}</li>`).join('') || '<li>None</li>'}</ul>
+        </div>
+      </div>
+    </div>
+  `;
+  // donut
+  const ctx = byId('orgDonut').getContext('2d');
+  new Chart(ctx, { type:'doughnut', data:{ labels:['Beds','ICU','OR'], datasets:[{ data:[60,25,15], backgroundColor:[varColor(),'#111827','#f59e0b'] }]}, options:{cutout:'65%'} });
+}
+
+// -------------------------
+// Patients Page (table)
+// -------------------------
+async function renderPatientsPage(){
+  const patients = await fakeFetch(KEY_PATIENTS);
+  const container = byId('roleDashboardPlaceholder');
+  container.innerHTML = `
+    <div class="card">
+      <h3>Patient Management</h3>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <input id="patientSearch" placeholder="Search patients by name, ID, or email..." style="flex:1;padding:10px;border-radius:8px;border:1px solid #eef6ff" />
+        <button class="btn primary" onclick="openAddPatient()">Add Patient</button>
+      </div>
+      <div style="margin-top:12px; overflow:auto">
+        <table>
+          <thead><tr><th>Patient ID</th><th>Name</th><th>Age/Gender</th><th>Blood Type</th><th>Contact</th><th>Last Visit</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="patientsTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  `;
+  populatePatientsTable(patients);
+}
+function populatePatientsTable(patients){
+  const tbody = byId('patientsTbody');
+  tbody.innerHTML = patients.map(p=>`<tr>
+    <td>${p.id}</td>
+    <td>${p.name}</td>
+    <td>${p.age} yrs • ${p.sex}</td>
+    <td>${p.blood}</td>
+    <td>${p.contact}</td>
+    <td>${p.lastVisit}</td>
+    <td><span class="pill ${p.status==='Critical'?'danger':p.status==='Stable'?'success':'warn'}">${p.status}</span></td>
+    <td><button class="btn ghost" onclick="viewRecord('${p.id}')">View Details</button></td>
+  </tr>`).join('');
+}
+function openAddPatient(){
+  const html = `
+    <h3>Add Patient</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <input id="newName" placeholder="Full name" style="padding:8px;border-radius:8px"/>
+      <input id="newAge" placeholder="Age" style="padding:8px;border-radius:8px"/>
+      <input id="newBlood" placeholder="Blood type" style="padding:8px;border-radius:8px"/>
+      <input id="newContact" placeholder="Contact" style="padding:8px;border-radius:8px"/>
+    </div>
+    <div style="text-align:right;margin-top:12px">
+      <button class="btn ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn primary" onclick="doAddPatient()">Add</button>
+    </div>
+  `;
+  showModal(html);
+}
+function doAddPatient(){
+  const name = byId('newName').value.trim();
+  const age = byId('newAge').value;
+  const blood = byId('newBlood').value;
+  const contact = byId('newContact').value;
+  if(!name) return alert('Enter name');
+  const patients = JSON.parse(localStorage.getItem(KEY_PATIENTS) || '[]');
+  const id = 'P' + Math.random().toString(36).slice(2,6).toUpperCase();
+  patients.push({ id, name, age, sex:'U', blood, contact, lastVisit: new Date().toLocaleDateString(), status:'Active', meds:[], diagnoses:[], labs:[], vitals:{bp:'--', sugar:'--'}});
+  save(KEY_PATIENTS, patients);
+  closeModal();
+  renderPatientsPage();
+  mediBotSay(`Added patient ${name}`);
+}
+
+// -------------------------
+// Appointments Page
+// -------------------------
+async function renderAppointmentsPage(){
+  const appts = JSON.parse(localStorage.getItem(KEY_APPTS) || '[]');
+  const container = byId('roleDashboardPlaceholder');
+  container.innerHTML = `
+    <div class="card">
+      <h3>Appointments</h3>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <input id="apptSearch" placeholder="Search appointments..." style="flex:1;padding:10px;border-radius:8px;border:1px solid #eef6ff" />
+        <button class="btn primary" onclick="openNewAppointment()">New Appointment</button>
+      </div>
+      <div style="margin-top:12px">
+        <table>
+          <thead><tr><th>ID</th><th>Patient</th><th>Doctor</th><th>Date/Time</th><th>Type</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>${appts.map(a=>`<tr><td>${a.id}</td><td>${a.patientName}</td><td>${a.doctor}</td><td>${a.time}</td><td>${a.type}</td><td>${a.status}</td><td><button class="btn ghost" onclick="openTelehealth('${a.id}')">Start</button></td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+function openNewAppointment(){
+  const html = `
+    <h3>New Appointment</h3>
+    <div style="display:grid;gap:8px">
+      <select id="apptPatient">${JSON.parse(localStorage.getItem(KEY_PATIENTS)||'[]').map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select>
+      <select id="apptDoctor"><option>Dr. Rahul Mehta</option><option>Dr. Emily White</option></select>
+      <input id="apptTime" type="datetime-local" />
+      <select id="apptType"><option>Virtual</option><option>In-person</option></select>
+    </div>
+    <div style="text-align:right;margin-top:12px"><button class="btn ghost" onclick="closeModal()">Cancel</button><button class="btn primary" onclick="doNewAppointment()">Create</button></div>
+  `;
+  showModal(html);
+}
+function doNewAppointment(){
+  const pid = byId('apptPatient').value;
+  const doctor = byId('apptDoctor').value;
+  const time = byId('apptTime').value;
+  const type = byId('apptType').value;
+  if(!time) return alert('Pick date/time');
+  const patients = JSON.parse(localStorage.getItem(KEY_PATIENTS)||'[]');
+  const p = patients.find(x=>x.id===pid);
+  const appts = JSON.parse(localStorage.getItem(KEY_APPTS)||'[]');
+  appts.push({ id:'A' + Math.random().toString(36).slice(2,6), patientId:pid, patientName:p.name, doctor, time, type, status:'Pending' });
+  save(KEY_APPTS, appts);
+  closeModal();
+  renderAppointmentsPage();
+  mediBotSay(`Created appointment for ${p.name} with ${doctor}`);
+}
+
+// -------------------------
+// Records Page
+// -------------------------
+async function renderRecordsPage(){
+  const patients = JSON.parse(localStorage.getItem(KEY_PATIENTS) || '[]');
+  const container = byId('roleDashboardPlaceholder');
+  container.innerHTML = `
+    <div class="card">
+      <h3>Medical Records</h3>
+      <p style="color:var(--muted)">Browse and view patient records and uploads.</p>
+    </div>
+    <div class="grid">
+      <div class="col-6 card">
+        <h4>Patient Quick List</h4>
+        <ul>${patients.map(p=>`<li style="margin-bottom:6px"><strong>${p.name}</strong> • ${p.id} • <button class="btn ghost" onclick="viewRecord('${p.id}')">Open</button></li>`).join('')}</ul>
+      </div>
+      <div class="col-6 card">
+        <h4>Recent Uploads</h4>
+        <div id="recentUploads"></div>
+      </div>
+    </div>
+  `;
+  renderUploadsList();
+}
+function renderUploadsList(){
+  const docsKey = 'medisync_docs_v1';
+  const docs = JSON.parse(localStorage.getItem(docsKey) || '{}');
+  const arr = Object.entries(docs).flatMap(([pid,files])=> files.map(f=> ({pid, name:f.name, uploaded:f.uploaded})));
+  const el = byId('recentUploads');
+  if(!el) return;
+  if(arr.length===0) el.innerHTML = '<div style="color:var(--muted)">No uploads yet</div>';
+  else el.innerHTML = '<ul>' + arr.map(x=>`<li>${x.name} <small style="color:var(--muted)">(${x.uploaded}) for ${x.pid}</small></li>`).join('') + '</ul>';
+}
+
+// -------------------------
+// Telehealth Page
+// -------------------------
+function renderTelehealthPage(){
+  const appts = JSON.parse(localStorage.getItem(KEY_APPTS) || '[]');
+  const container = byId('roleDashboardPlaceholder');
+  container.innerHTML = `
+    <div class="card">
+      <h3>Telehealth</h3>
+      <p style="color:var(--muted)">Start demo telehealth sessions or review previous calls (mock).</p>
+      <div style="margin-top:12px">
+        ${appts.map(a=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;border-bottom:1px solid #f1f5f9"><div><strong>${a.patientName}</strong><div style="font-size:13px;color:var(--muted)">${a.time} • ${a.type}</div></div><div><button class="btn primary" onclick="openTelehealth('${a.id}')">Start Call</button></div></div>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// -------------------------
+// Analytics Page
+// -------------------------
+function renderAnalyticsPage(){
+  const container = byId('roleDashboardPlaceholder');
+  container.innerHTML = `
+    <div class="card">
+      <h3>Analytics & Insights</h3>
+      <p style="color:var(--muted)">Demo metrics — patient growth, weekly appointments, and e-prescription rate.</p>
+    </div>
+    <div class="grid">
+      <div class="col-6 card">
+        <h4>Weekly Appointments</h4>
+        <canvas id="chartWeekly" height="140"></canvas>
+      </div>
+      <div class="col-6 card">
+        <h4>Patient Growth</h4>
+        <canvas id="chartGrowth" height="140"></canvas>
+      </div>
+    </div>
+  `;
+  setTimeout(()=>{
+    new Chart(byId('chartWeekly').getContext('2d'), { type:'bar', data:{ labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], datasets:[{ label:'Appointments', data:[28,32,24,38,42,16,12], backgroundColor:varColor() }]}, options:{maintainAspectRatio:false} });
+    new Chart(byId('chartGrowth').getContext('2d'), { type:'line', data:{ labels:['Jan','Feb','Mar','Apr','May','Jun'], datasets:[{ label:'Patients', data:[120,135,155,175,195,210], borderColor:varColor(), fill:false }]}, options:{maintainAspectRatio:false} });
+  }, 120);
+}
+
+// -------------------------
+// Settings Page
+// -------------------------
+function renderSettingsPage(){
+  const container = byId('roleDashboardPlaceholder');
+  const role = SESSION ? SESSION.role : 'guest';
+  container.innerHTML = `
+    <div class="card">
+      <h3>Settings</h3>
+      <p style="color:var(--muted)">Account: ${SESSION ? SESSION.name + ' (' + SESSION.role + ')' : 'Not signed in'}</p>
+      <div style="margin-top:12px">
+        <button class="btn ghost" onclick="exportDemoData()">Export Demo Data (JSON)</button>
+        <button class="btn primary" onclick="clearDemoData()">Reset Demo Data</button>
+      </div>
+    </div>
+  `;
+}
+function exportDemoData(){
+  const obj = {
+    users: JSON.parse(localStorage.getItem(KEY_USERS) || '[]'),
+    patients: JSON.parse(localStorage.getItem(KEY_PATIENTS) || '[]'),
+    appts: JSON.parse(localStorage.getItem(KEY_APPTS) || '[]'),
+  };
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'medisync-demo-data.json'; a.click();
+}
+function clearDemoData(){
+  if(!confirm('Clear all demo data and reset?')) return;
+  localStorage.removeItem(KEY_PATIENTS);
+  localStorage.removeItem(KEY_APPTS);
+  localStorage.removeItem(KEY_CHAT);
+  initDemoData();
+  renderLanding();
+  mediBotSay('Demo data reset.');
+}
+
+// -------------------------
+// Chat bot MediBot
+// -------------------------
+byId('chatToggle').addEventListener('click', ()=> {
+  const w = byId('chatWindow');
+  w.style.display = w.style.display === 'flex' ? 'none' : 'flex';
+  renderChat();
+});
+byId('chatSend').addEventListener('click', sendChatMsg);
+byId('chatInput').addEventListener('keydown', e=> { if(e.key==='Enter') sendChatMsg(); });
+
+function loadChatHistory(){ return JSON.parse(localStorage.getItem(KEY_CHAT) || '[]'); }
+function saveChatHistory(arr){ localStorage.setItem(KEY_CHAT, JSON.stringify(arr)); }
+function renderChat(){
+  const body = byId('chatBody');
+  body.innerHTML = '';
+  const history = loadChatHistory();
+  history.forEach(m=>{
+    const div = document.createElement('div');
+    div.className = 'bubble ' + (m.from==='bot' ? 'bot' : 'user');
+    div.textContent = m.text;
+    body.appendChild(div);
+  });
+  body.scrollTop = body.scrollHeight;
+  byId('chatRoleLabel').textContent = SESSION ? `${SESSION.role} assistant` : 'Guest Assistant';
+}
+function sendChatMsg(){
+  const inpt = byId('chatInput');
+  const txt = inpt.value.trim();
+  if(!txt) return;
+  const hist = loadChatHistory();
+  hist.push({ from:'user', text:txt, ts:Date.now() });
+  saveChatHistory(hist); inpt.value=''; renderChat();
+  setTimeout(()=> {
+    const reply = generateBotReply(txt);
+    const hist2 = loadChatHistory();
+    hist2.push({ from:'bot', text: reply, ts:Date.now() });
+    saveChatHistory(hist2); renderChat();
+  }, 600);
+}
+function generateBotReply(text){
+  const t = text.toLowerCase();
+  // basic intents
+  if(t.includes('simulate') || t.includes('simulation') || t.includes('effectiveness')){
+    // try to extract dosage
+    const mg = (t.match(/(\d{2,3})\s?mg/) || [])[1] || 50;
+    const res = simulateModel({baseline:45, dosage: Number(mg), halfLife:24, days:7});
+    return `Simulated ${mg}mg — predicted peak effectiveness: ${res.series[3].value}% (demo). Open Simulation/Analytics to view graph.`;
+  }
+  if(t.includes('appointment') || t.includes('book')) return 'To book an appointment, open Appointments and click New Appointment — I can also schedule a quick demo booking for you.';
+  if(t.includes('medication') || t.includes('meds') || t.includes('medicine')) return 'I can summarize medications. For the selected patient, meds include Metformin 500mg, Lisinopril 10mg (demo).';
+  if(t.includes('upload') || t.includes('file')) return 'Use the Upload button on the patient record to attach files (PDF, images).';
+  if(t.includes('hello') || t.includes('hi')) return `Hello ${SESSION?SESSION.name.split(' ')[0]:'there'}! I can help with appointments, meds, and simulations.`;
+  return "I'm your MediBot (demo). Try: 'Simulate 75mg', 'Book appointment', or 'Show my meds'.";
+}
+// helper to push bot messages
+function mediBotSay(msg){ const hist = loadChatHistory(); hist.push({ from:'bot', text: msg, ts:Date.now() }); saveChatHistory(hist); renderChat(); }
+
+// -------------------------
+// Simulation Model
+// -------------------------
+function simulateModel({baseline=40, dosage=50, halfLife=24, days=7}){
+  const k = 0.04, maxAdd=60, x0=50;
+  const add = maxAdd / (1 + Math.exp(-k*(dosage - x0)));
+  const peak = Math.min(100, baseline + add);
+  const series = [];
+  for(let day=0; day<=days; day++){
+    let value;
+    if(day <= 2) value = baseline + (peak - baseline)*(day/2);
+    else {
+      const t = day - 2;
+      const decay = Math.exp(-Math.log(2)*t/halfLife);
+      value = baseline + (peak - baseline)*decay;
+    }
+    value = Math.max(0, Math.min(100, Math.round(value*10)/10));
+    series.push({ day, value });
+  }
+  return { baseline, dosage, halfLife, days, series };
+}
+
+// utility color
+function varColor(){ return getComputedStyle(document.documentElement).getPropertyValue('--blue').trim() || '#0b7fff' }
+
+// -------------------------
+// Utilities and boot
+// -------------------------
+function renderPatientsPageIfNeeded(){
+  const active = document.querySelector('nav.side-nav button.active').dataset.section;
+  if(active === 'patients') renderPatientsPage();
+  else if(active==='appointments') renderAppointmentsPage();
+}
+function renderLandingIfNoSession(){
+  if(!SESSION) renderLanding();
+  else loadRoleDashboard();
+}
+renderLandingIfNoSession();
+renderChat();
+
+// expose some functions to global for inline onclick use
+window.openBooking = openBooking;
+window.openTelehealth = openTelehealth;
+window.viewRecord = viewRecord;
+window.openUpload = openUpload;
+window.quickLogin = quickLogin;
+window.startTelehealthFor = startTelehealthFor;
+
+// close modal on backdrop click
+byId('modalBackdrop').addEventListener('click', (e)=> { if(e.target.id==='modalBackdrop') closeModal(); });
+
+/* End of script */
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    p{color:blue;} /*5th priority (lowest):Element selector*/
+    .highlight{color:green} /*4th priority: class selector*/
+    #special{color:orange} /*2nd priority:ID selector*/
+    p.special{color:brown} /*3rd priority:element + class selector*/
+    p{color:red!important;}/*1st priority overrides eyerything*/
+</style>
+</head>
+<body>
+    <p id="special"class="highlight special">This is a test.</p>
+</body>
+</html>

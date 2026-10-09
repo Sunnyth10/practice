@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookmark Maker</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    form div {
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input[type="text"] {
+      width: 300px;
+      padding: 8px;
+    }
+
+    button {
+      padding: 10px 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #bookmarksList {
+      margin-top: 20px;
+      list-style: none;
+      padding: 0;
+    }
+
+    #bookmarksList li {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Simple Bookmark Maker</h1>
+
+  <form id="bookmarkForm">
+    <div>
+      <label for="siteName">Site Name</label>
+      <input type="text" id="siteName" placeholder="e.g., Google" required>
+    </div>
+
+    <div>
+      <label for="siteURL">Site URL</label>
+      <input type="text" id="siteURL" placeholder="e.g., https://www.google.com" required>
+    </div>
+
+    <button type="submit">Add Bookmark</button>
+  </form>
+
+  <h2>Your Bookmarks</h2>
+  <ul id="bookmarksList"></ul>
+
+  <script>
+    const form = document.getElementById('bookmarkForm');
+    const list = document.getElementById('bookmarksList');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const name = document.getElementById('siteName').value.trim();
+      const url = document.getElementById('siteURL').value.trim();
+
+      if (name === "" || url === "") {
+        alert("Please enter both site name and URL");
+        return;
+      }
+
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = url;
+      a.textContent = name;
+      a.target = "_blank";
+      li.appendChild(a);
+      list.appendChild(li);
+
+      // Clear input fields
+      form.reset();
+    });
+  </script>
+
+</body>
+</html>
