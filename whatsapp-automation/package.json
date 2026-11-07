@@ -1,0 +1,17 @@
+{
+  "name": "whatsapp-automation",
+  "version": "1.0.0",
+  "description": "WhatsApp automation for sending and auto-replying to messages",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^18.0.9",
+    "qrcode-terminal": "^0.12.0",
+    "whatsapp-web.js": "^1.34.7"
+  }
+}
